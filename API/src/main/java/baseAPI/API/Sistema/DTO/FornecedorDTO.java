@@ -36,5 +36,5 @@ public class FornecedorDTO {
 
     private String email;
 
-    private List<Produto> produtos;
+    private List<Long> produtos;
 }

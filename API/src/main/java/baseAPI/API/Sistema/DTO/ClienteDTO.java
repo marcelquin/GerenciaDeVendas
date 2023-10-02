@@ -4,7 +4,9 @@ import baseAPI.API.Sistema.Model.Pedido;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class ClienteDTO {
 
     private Long cpf;
 
-    private Date dataNascimento;
+    private LocalDate dataNascimento;
 
     private  String logradouro;
 
@@ -39,5 +41,5 @@ public class ClienteDTO {
 
     private String email;
 
-    private List<Pedido> pedidos;
+    private List<Long> pedidos;
 }

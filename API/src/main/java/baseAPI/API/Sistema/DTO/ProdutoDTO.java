@@ -15,7 +15,7 @@ public class ProdutoDTO {
 
     private String codigo;
 
-    private Fornecedor fornecedor;
+    private Long fornecedor;
 
     private String nome;
 

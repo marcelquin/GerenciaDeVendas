@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -29,8 +31,8 @@ public class Cliente implements Serializable {
 
     private Long cpf;
 
-    @Column(name = "Data_Nascimento")
-    private Date dataNascimento;
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dataNascimento;
 
     private  String logradouro;
 
