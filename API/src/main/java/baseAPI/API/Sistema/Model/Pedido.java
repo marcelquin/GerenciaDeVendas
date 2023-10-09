@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,8 +21,8 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToMany
-    private List<Produto> produtos;
+    @OneToOne
+    private Carrinho produtos;
 
     @OneToOne
     private Cliente cliente;
@@ -39,5 +38,17 @@ public class Pedido {
     @Column(name = "Data_Pagamento")
     private LocalDate datapagamento;
 
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    @Column(name = "Data_Cancelamento")
+    private LocalDate dataCancelamento;
+
+    @Enumerated
     private Status status;
+
+    public double CalValorTotal() {
+        this.valorTotal = produtos.getValorTotal();
+        return valorTotal;
+    }
+
 }
+

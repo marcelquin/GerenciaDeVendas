@@ -1,8 +1,9 @@
 package baseAPI.API.Sistema.Controller;
 
-import baseAPI.API.Sistema.DTO.ClienteDTO;
-import baseAPI.API.Sistema.Model.Cliente;
-import baseAPI.API.Sistema.Service.ClienteService;
+import baseAPI.API.Sistema.DTO.PedidoDTO;
+import baseAPI.API.Sistema.Enum.Status;
+import baseAPI.API.Sistema.Model.Pedido;
+import baseAPI.API.Sistema.Service.PedidoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -10,32 +11,25 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.awt.*;
-import java.io.IOException;
-import java.sql.SQLException;
 
 @RestController
-@RequestMapping("/api/cliente")
+@RequestMapping("/api/pedido")
 @Slf4j
 @RequiredArgsConstructor
-@Tag(name = "/api/cliente", description = "Manipula dados relacionados a tabela cliente")
-public class ClienteController {
+@Tag(name = "/api/pedido", description = "Manipula dados relacionados a tabela Pedido")
+public class PedidoController {
 
     @Autowired
-    private final ClienteService service;
+    private final PedidoService service;
 
-    @Operation(summary = "Lista cursos cadastrados", method = "GET")
+    @Operation(summary = "Lista Pedidos cadastrados", method = "GET")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
             @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
     })
     @GetMapping()
-    public Cliente listar()
+    public Pedido listarPedidos()
     {
         return service.listar();
     }
@@ -48,57 +42,24 @@ public class ClienteController {
             @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
     })
     @GetMapping("/id")
-    public Cliente buscaPorId(@RequestParam Long id)
+    public Pedido buscarPedidossPorId(Long id)
     {
         return service.buscaPorId(id);
     }
 
-    @Operation(summary = "Busca imagem por id", method = "GET")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Busca realizada com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
-    })
-    @GetMapping("/verImagemclientePorId")
-    public ResponseEntity<byte[]> verImagemclientePorId(long id) throws IOException, SQLException { return service.verImagemclientePorId(id); }
 
-
-    @Operation(summary = "Salva Novo registro na tabela", method = "POST")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Salvo realizado com sucesso"),
             @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
             @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
             @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
     })
-    @PostMapping()
-    public ClienteDTO novocliente(ClienteDTO clienteDTO)
+    @PostMapping(value = "/efetuarCompra")
+    public PedidoDTO Salvar(PedidoDTO pedidoDTO, @RequestParam Long idCar, @RequestParam Long idCli)
     {
-        return service.salvar(clienteDTO);
+        return service.salvar(idCar, idCli);
     }
 
-    @Operation(summary = "adiciona pedido ao cliente", method = "POST")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Salvo realizado com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
-    })
-    @PostMapping(value = "/adicionarpedido")
-    public void adicionarpedido(@RequestParam Long idcliente, @RequestParam Long idPedido)
-    {
-        service.adicionarPedido(idcliente, idPedido);
-    }
-
-    @Operation(summary = "adiciona imagem ao cliente", method = "POST")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Salvo realizado com sucesso"),
-            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
-            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
-            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
-    })
-    @PostMapping(value = "/adicionarImagemCliente", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public void adicionarImagemCliente(@RequestParam Long id, @RequestPart MultipartFile file){ service.adicionarImagemCliente(id, file);}
 
     @Operation(summary = "Edita Registro da tabela", method = "PUT")
     @ApiResponses(value = {
@@ -108,10 +69,20 @@ public class ClienteController {
             @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
     })
     @PutMapping("/id")
-    public ClienteDTO editarcliente(@RequestParam Long id, ClienteDTO clienteDTO)
+    public PedidoDTO EditarPedido(@RequestParam Long idPed, @RequestParam Long idCar, @RequestParam Long idCli)
     {
-        return service.editar(id, clienteDTO);
+        return service.editar(idPed, idCar, idCli);
     }
+
+    @Operation(summary = "Edita Registro da tabela", method = "PUT")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Editado com sucesso"),
+            @ApiResponse(responseCode = "422", description = "Dados de requisição inválida"),
+            @ApiResponse(responseCode = "400", description = "Parametros inválidos"),
+            @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
+    })
+    @PutMapping("/alterarStatusPagamento")
+    public void alterarStatusPagamento(@RequestParam Long id, Status status){ service.alterarStatusPagamento(id, status);}
 
     @Operation(summary = "Deleta Registro da tabela por id", method = "DELETE")
     @ApiResponses(value = {
@@ -121,7 +92,7 @@ public class ClienteController {
             @ApiResponse(responseCode = "500", description = "Erro ao realizar o upload de arquivo"),
     })
     @DeleteMapping("/id")
-    public void deletar(Long id)
+    public void deletarpedido(Long id)
     {
         service.deletar(id);
     }

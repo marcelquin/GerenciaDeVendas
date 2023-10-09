@@ -1,6 +1,5 @@
 package baseAPI.API.Sistema.Service;
 
-import baseAPI.API.Sistema.DTO.FornecedorDTO;
 import baseAPI.API.Sistema.DTO.ProdutoDTO;
 import baseAPI.API.Sistema.Model.Fornecedor;
 import baseAPI.API.Sistema.Model.Produto;
@@ -9,11 +8,14 @@ import baseAPI.API.Sistema.Repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 
 import static org.springframework.http.ResponseEntity.ok;
 
@@ -60,6 +62,11 @@ public class ProdutoService {
             {
 
                Produto produto = new Produto();
+               if(frepository.existsById(produtoDTO.getFornecedor()))
+               {
+                   Fornecedor fornecedor = frepository.findById(produtoDTO.getFornecedor()).get();
+                   produto.setFornecedor(fornecedor);
+               }
                 BeanUtils.copyProperties(produtoDTO, produto);
                 repository.save(produto);
                 System.out.println("Salvo com sucesso");
@@ -72,22 +79,37 @@ public class ProdutoService {
         return null;
     }
 
-    public void adicionarFornecedor(Long idproduto, Long idFornecedor)
-    {
-        if(idproduto != null && idFornecedor != null)
+
+        public ResponseEntity<byte[]> verImagemPorId(long id) throws IOException, SQLException
         {
-            if(repository.existsById(idproduto))
-            {
-                Produto produto = repository.findById(idproduto).get();
-                if(frepository.existsById(idFornecedor))
+        Produto entidade = repository.findById(id).get();
+        byte[] imageBytes = null;
+        imageBytes = entidade.getImagem().getBytes(1, (int) entidade.getImagem().length());
+        return ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
+        }
+
+
+        public void AdicionarImagem(Long id, MultipartFile file)
+        {
+            try{
+                if(repository.existsById(id))
                 {
-                    Fornecedor fornecedor = frepository.findById(idFornecedor).get();
-                    produto.setFornecedor(fornecedor);
+                    Produto produto = repository.findById(id).get();
+
+                    if(!file.isEmpty()){
+                        byte[] bytes = file.getBytes();
+                        Blob blob = new javax.sql.rowset.serial.SerialBlob(bytes);
+                        produto.setImagem(blob);
+                    }
+
                     repository.save(produto);
                 }
+            }catch (Exception e)
+            {
+                e.getMessage();
+                System.out.println("erro ao editar");
             }
         }
-    }
 
     public ProdutoDTO editar(Long id,ProdutoDTO produtoDTO)
     {
@@ -111,7 +133,23 @@ public class ProdutoService {
         return null;
     }
 
-    public Fornecedor deletar(Long id)
+    public void BaixaEstoque(Long idprod, Double quantidade)
+    {
+        try{
+            if(repository.existsById(idprod))
+            {
+                Produto produto = repository.findById(idprod).get();
+                produto.setEstoque(produto.getEstoque() - quantidade);
+                repository.save(produto);
+            }
+        }catch (Exception e)
+        {
+            e.getMessage();
+            System.out.println("erro ao editar");
+        }
+    }
+
+    public void deletar(Long id)
     {
         try{
             if(repository.existsById(id))
@@ -123,6 +161,7 @@ public class ProdutoService {
             e.getMessage();
             System.out.println("erro ao deletar");
         }
-        return null;
     }
+
+
 }

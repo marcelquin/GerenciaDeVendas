@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.sql.Blob;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +52,9 @@ public class Cliente implements Serializable {
     private Integer celular;
 
     private String email;
+
+    @Lob
+    private Blob imagem;
 
     @OneToMany
     private List<Pedido> pedidos;

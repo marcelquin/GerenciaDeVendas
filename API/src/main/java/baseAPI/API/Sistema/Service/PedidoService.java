@@ -1,20 +1,23 @@
 package baseAPI.API.Sistema.Service;
 
-import baseAPI.API.Sistema.DTO.FornecedorDTO;
+
 import baseAPI.API.Sistema.DTO.PedidoDTO;
-import baseAPI.API.Sistema.DTO.ProdutoDTO;
-import baseAPI.API.Sistema.Model.Fornecedor;
-import baseAPI.API.Sistema.Model.Pedido;
-import baseAPI.API.Sistema.Model.Produto;
-import baseAPI.API.Sistema.Repository.PedidoRepository;
-import baseAPI.API.Sistema.Repository.ProdutoRepository;
+
+import baseAPI.API.Sistema.Enum.Status;
+import baseAPI.API.Sistema.Model.*;
+
+import baseAPI.API.Sistema.Repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import static org.springframework.http.ResponseEntity.ok;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static baseAPI.API.Sistema.Enum.Status.*;
+
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,16 @@ public class PedidoService {
 
     @Autowired
     private PedidoRepository repository;
+    @Autowired
+    private CLienteRepository cRepository;
+    @Autowired
+    private CarrinhoRepository CrRepository;
+
+    @Autowired
+    private ProdutoRepository PRepository;
+
+    @Autowired
+    private ItemPedidoService ITService;
 
     public Pedido listar()
     {
@@ -50,60 +63,110 @@ public class PedidoService {
         return null;
     }
 
-    public ResponseEntity<PedidoDTO> salvar(PedidoDTO pedidoDTO)
+    public PedidoDTO salvar(Long idcar, Long idCli)
     {
         try{
-            if(pedidoDTO != null)
+            Pedido pedido = new Pedido();
+            Cliente cliente = new Cliente();
+            if(CrRepository.existsById(idcar))
             {
-
-                Pedido pedido = new Pedido();
-                BeanUtils.copyProperties(pedidoDTO, pedido);
-                repository.save(pedido);
-                System.out.println("Salvo com sucesso");
+                Carrinho carrinho = CrRepository.findById(idcar).get();
+                pedido.setProdutos(carrinho);
             }
+            if(cRepository.existsById(idCli))
+            {
+                cliente = cRepository.findById(idCli).get();
+                pedido.setCliente(cliente);
+            }
+            pedido.setValorTotal(pedido.CalValorTotal());
+            pedido.setStatus(AGUARDANDOPAGAMENTO);
+            pedido.setDataPedido(LocalDate.now());
+            repository.save(pedido);
+
+            List<Pedido> clientePedidos = new ArrayList<>();
+            Pedido idpedido = repository.getReferenceById(pedido.getId());
+            clientePedidos.add(idpedido);
+            cliente.setPedidos(clientePedidos);
+            cRepository.save(cliente);
         }catch (Exception e)
         {
             e.getMessage();
-            System.out.println("erro ao salvar");
+            System.out.println("erro ao buscar");
         }
         return null;
     }
 
-
-    public ResponseEntity<PedidoDTO> editar(Long id, PedidoDTO pedidoDTO)
+    public PedidoDTO editar(Long idPed, Long idcar, Long idCli)
     {
-        try{
-            if(repository.existsById(id))
+        try {
+            if(repository.existsById(idPed))
             {
-                if(pedidoDTO != null)
+               Pedido pedido = repository.findById(idPed).get();
+                Cliente cliente = new Cliente();
+                if(CrRepository.existsById(idcar))
                 {
-
-                    Pedido pedido = new Pedido();
-                    BeanUtils.copyProperties(pedidoDTO, pedido);
-                    repository.save(pedido);
-                    System.out.println("Salvo com sucesso");
+                    Carrinho carrinho = CrRepository.findById(idcar).get();
+                    pedido.setProdutos(carrinho);
                 }
-            }
-        }catch (Exception e)
-        {
-            e.getMessage();
-            System.out.println("erro ao editar");
-        }
-        return (ResponseEntity<PedidoDTO>) ok();
-    }
+                if(cRepository.existsById(idCli))
+                {
+                    cliente = cRepository.findById(idCli).get();
+                    pedido.setCliente(cliente);
+                }
+                pedido.setValorTotal(pedido.CalValorTotal());
+                pedido.setStatus(AGUARDANDOPAGAMENTO);
+                pedido.setDataPedido(LocalDate.now());
+                repository.save(pedido);
 
-    public Pedido deletar(Long id)
-    {
-        try{
-            if(repository.existsById(id))
-            {
-                repository.deleteById(id);
+                List<Pedido> clientePedidos = new ArrayList<>();
+                Pedido idpedido = repository.getReferenceById(pedido.getId());
+                clientePedidos.add(idpedido);
+                cliente.setPedidos(clientePedidos);
+                cRepository.save(cliente);
+
             }
         }catch (Exception e)
         {
             e.getMessage();
-            System.out.println("erro ao deletar");
+            System.out.println("erro ao buscar");
         }
         return null;
+    }
+
+
+    public void alterarStatusPagamento(Long id, Status status)
+    {
+        try{
+            if(repository.existsById(id)) {
+                Pedido pedido = repository.findById(id).get();
+                if (status == PAGO) {
+                    pedido.setStatus(PAGO);
+                    pedido.setDatapagamento(LocalDate.now());
+                }
+                if (status == CANCELADO) {
+                    pedido.setStatus(CANCELADO);
+                    pedido.setDataCancelamento(LocalDate.now());
+                }
+                repository.save(pedido);
+            }
+        }catch (Exception e)
+        {
+            e.getMessage();
+            System.out.println("erro ao buscar");
+        }
+    }
+
+    public void deletar(Long id)
+    {
+        try {
+           if(repository.existsById(id))
+           {
+               repository.deleteById(id);
+           }
+        }catch (Exception e)
+        {
+            e.getMessage();
+            System.out.println("erro ao buscar");
+        }
     }
 }

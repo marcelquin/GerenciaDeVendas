@@ -1,7 +1,6 @@
 package baseAPI.API.Sistema.Service;
 
 import baseAPI.API.Sistema.DTO.ClienteDTO;
-import baseAPI.API.Sistema.DTO.PedidoDTO;
 import baseAPI.API.Sistema.Model.Cliente;
 import baseAPI.API.Sistema.Model.Pedido;
 import baseAPI.API.Sistema.Repository.CLienteRepository;
@@ -9,9 +8,14 @@ import baseAPI.API.Sistema.Repository.PedidoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +57,13 @@ public class ClienteService {
         return null;
     }
 
+    public ResponseEntity<byte[]> verImagemclientePorId(long id) throws IOException, SQLException {
+        Cliente entidade = repository.findById(id).get();
+        byte[] imageBytes = null;
+        imageBytes = entidade.getImagem().getBytes(1, (int) entidade.getImagem().length());
+        return ok().contentType(MediaType.IMAGE_JPEG).body(imageBytes);
+    }
+
     public ClienteDTO salvar(ClienteDTO clienteDTO)
     {
         try{
@@ -69,6 +80,26 @@ public class ClienteService {
             System.out.println("erro ao salvar");
         }
         return null;
+    }
+
+    public void adicionarImagemCliente(Long id, MultipartFile file)
+    {
+        try {
+            if(repository.existsById(id))
+            {
+                Cliente cliente = repository.findById(id).get();
+                if(!file.isEmpty()){
+                    byte[] bytes = file.getBytes();
+                    Blob blob = new javax.sql.rowset.serial.SerialBlob(bytes);
+                    cliente.setImagem(blob);
+                }
+                repository.save(cliente);
+            }
+        }catch (Exception e)
+        {
+            e.getMessage();
+            System.out.println("erro ao salvar");
+        }
     }
 
     public void adicionarPedido(Long idcliente, Long idPedido)

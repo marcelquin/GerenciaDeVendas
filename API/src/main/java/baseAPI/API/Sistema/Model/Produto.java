@@ -28,15 +28,13 @@ public class Produto {
 
     private String descrisao;
 
-    private Double quantidade;
-
     private Double preco;
 
     @Lob
     private Blob imagem;
 
-    private Long estoque;
+    private Double estoque;
 
 
 
-}
+    }

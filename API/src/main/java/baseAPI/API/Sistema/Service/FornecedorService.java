@@ -1,18 +1,13 @@
 package baseAPI.API.Sistema.Service;
 
-import baseAPI.API.Sistema.DTO.ClienteDTO;
 import baseAPI.API.Sistema.DTO.FornecedorDTO;
-import baseAPI.API.Sistema.DTO.PedidoDTO;
-import baseAPI.API.Sistema.Model.Cliente;
 import baseAPI.API.Sistema.Model.Fornecedor;
-import baseAPI.API.Sistema.Model.Pedido;
 import baseAPI.API.Sistema.Model.Produto;
 import baseAPI.API.Sistema.Repository.FornecedorRepository;
 import baseAPI.API.Sistema.Repository.ProdutoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
